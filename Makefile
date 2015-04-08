@@ -9,6 +9,7 @@ CSRCDIR = c_src
 INCDIR = include
 DOCDIR = doc
 EMACSDIR = emacs
+DSRCDIR = dialyzer
 
 VPATH = $(SRCDIR)
 
@@ -38,6 +39,8 @@ ESRCS = $(notdir $(wildcard $(SRCDIR)/*.erl))
 XSRCS = $(notdir $(wildcard $(SRCDIR)/*.xrl))
 YSRCS = $(notdir $(wildcard $(SRCDIR)/*.yrl))
 EBINS = $(ESRCS:.erl=.beam) $(XSRCS:.xrl=.beam) $(YSRCS:.yrl=.beam)
+DSRCS = $(notdir $(wildcard $(DSRCDIR)/*.erl))
+DBINS = $(DSRCS:.erl=.beam)
 
 CSRCS = $(notdir $(wildcard $(CSRCDIR)/*.c))
 BINS = $(CSRCS:.c=)
@@ -51,6 +54,9 @@ $(BINDIR)/%: $(CSRCDIR)/%.c
 	cc -o $@ $<
 
 $(EBINDIR)/%.beam: $(SRCDIR)/%.erl
+	$(ERLC) -I $(INCDIR) -o $(EBINDIR) $(HAS_MAPS) $(ERLCFLAGS) $<
+
+$(EBINDIR)/%.beam: $(DSRCDIR)/%.erl
 	$(ERLC) -I $(INCDIR) -o $(EBINDIR) $(HAS_MAPS) $(ERLCFLAGS) $<
 
 %.erl: %.xrl
@@ -69,7 +75,7 @@ compile: maps.mk
 	then rebar.cmd compile; \
 	elif which rebar > /dev/null; \
 	then rebar compile; \
-	else $(MAKE) $(MFLAGS) erlc_compile; \
+	else $(MAKE) $(MFLAGS) erlc_compile dialyzer; \
 	fi
 
 ## Compile using erlc
@@ -84,6 +90,9 @@ install:
 	ln -s `pwd`/bin/lfe $(DESTBINDIR)
 	ln -s `pwd`/bin/lfec $(DESTBINDIR)
 	ln -s `pwd`/bin/lfescript $(DESTBINDIR)
+	ln -s `pwd`/bin/ldialyzer $(DESTBINDIR)
+
+dialyzer: $(addprefix $(EBINDIR)/, $(DBINS))
 
 docs:
 
