@@ -150,14 +150,22 @@ path_read_file(Path, Name, St) ->
 %% lib_file_name(LibPath) -> {ok,LibFileName} | {error,Error}.
 %%  Construct path to true library file.
 
-lib_file_name(Name) ->
-    try
-        [App|Path] = filename:split(Name),
-        LibDir = code:lib_dir(list_to_atom(App)),
-        {ok,filename_join([LibDir|Path])}
-    catch
-        _:_ -> error
+lib_file_name(Lpath) ->
+    [Lname|Rest] = filename:split(Lpath),
+    case code:lib_dir(list_to_atom(Lname)) of
+        Ldir when is_list(Ldir) ->
+            {ok,filename:join([Ldir|Rest])};
+        {error,E} -> {error,E}
     end.
+
+% lib_file_name(Name) ->
+%     try
+%         [App|Path] = filename:split(Name),
+%         LibDir = code:lib_dir(list_to_atom(App)),
+%         {ok,filename_join([LibDir|Path])}
+%     catch
+%         _:_ -> error
+%     end.
 
 filename_join(["." | [_|_]=Rest]) ->
     filename_join(Rest);
